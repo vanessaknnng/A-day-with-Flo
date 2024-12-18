@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floras Adventure</title>
+    <style>
+        /* Gesamtes Body Styling */
+        body {
+            font-family: Verdana, sans-serif; /* Schriftart auf Verdana setzen */
+            color: #333;
+            text-align: center;
+            padding: 20px;
+            background-size: cover; /* Hintergrundbilder strecken */
+            background-position: center;
+            background-repeat: no-repeat; /* Verhindert das Wiederholen des Hintergrundbilds */
+            transition: background 1s ease-in-out;
+            height: 100vh; /* Höhe des Body auf 100% des Viewports setzen */
+            margin: 0; /* Margin entfernen */
+        }
+
+        /* Transparenter Kasten um die Überschrift */
+        h1 {
+            font-size: 2.5em;
+            background-color: rgba(255, 255, 255, 0.6); /* 60% Transparenz */
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        /* Transparenter Kasten um die Frage */
+        .question-container {
+            position: relative;
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.6); /* 60% Transparenz */
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 50px;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        /* Frage Styling */
+        .question {
+            font-size: 1.8em;
+            color: black; /* Schriftfarbe schwarz */
+            font-weight: bold;
+        }
+
+        /* Styling für die Antwort-Buttons */
+        .answers {
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+            background-color: #4CAF50; /* Grüner Button */
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #45a049; /* Helleres Grün beim Hover */
+        }
+
+        /* Transparenter Kasten für das Ergebnis */
+        .result {
+            font-size: 1.8em;
+            margin-top: 30px;
+            color: green;
+            background-color: rgba(255, 255, 255, 0.6); /* 60% Transparenz */
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        /* Wiederholen Button */
+        .retry-button {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background-color: #f44336; /* Roter Button für Wiederholung */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .retry-button:hover {
+            background-color: #d32f2f; /* Helleres Rot beim Hover */
+        }
+
+        /* Responsives Design */
+        @media (max-width: 768px) {
+            .question {
+                font-size: 1.5em;
+            }
+            button {
+                font-size: 1em;
+                padding: 8px 16px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Ein Tag mit Flora</h1>
+
+    <div id="game">
+        <div id="question-container" class="question-container">
+            <p class="question" id="question">Was möchtest du tun?</p>
+            <div class="answers">
+                <button onclick="chooseAnswer(1)">Antwort 1</button>
+                <button onclick="chooseAnswer(2)">Antwort 2</button>
+                <button onclick="chooseAnswer(3)">Antwort 3</button>
+            </div>
+        </div>
+        <div id="result-container" style="display:none;">
+            <p class="result" id="result-text"></p>
+            <button id="retry-button" class="retry-button" style="display:none;" onclick="retryGame()">Wiederbeleben</button>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestion = 0;
+        const questions = [
+            {
+                question: "Du sitzt auf der Fensterbank. Was tust du jetzt?",
+                answers: ["Nach Schleckies betteln", "Ein Lied miauen", "Die Zimmerpflanze anknabbern"],
+                correctAnswer: 2,
+                background: "forest.jpg" // Bild für die Szene im Wald
+            },
+            {
+                question: "Welches Lied miaust du in Katzisch?",
+                answers: ["Snoop Dog - Sweat ", "Billie Eilish - What was I made for", "Baha Men - Who let the dogs out"],
+                correctAnswer: 2,
+                background: "forest.jpg" // Bild bleibt im Wald
+            },
+            {
+                question: "Du hast eine Fee herbeimiaut und sie schenkt dir einen Wunsch. Was wünscht du dir?",
+                answers: ["Unendlich Schleckies", "Keine Türen mehr", "Plastik"],
+                correctAnswer: 1,
+                background: "fee.jpg" // Bild für das verlassene Haus
+            },
+            {
+                question: "Was machst du mit den ganzen Schleckies",
+                answers: ["Verstecken für schlechte Zeiten", "Nichts. Ich rühre nichts an", "Alle essen bis ich platze"],
+                correctAnswer: 1,
+                background: "schleckies.jpg" // Bild bleibt im Haus
+            },
+            {
+                question: "Du bist Schleckie-Reich! Wie feierst du?",
+                answers: ["Katzenparty mit den Jungs", "Packe alles ein und fliege nach Malle", "Ich mache ein Nickerchen auf Papas Hose"],
+                correctAnswer: 3,
+                background: "versteck.jpg" // Bild für das Ziel (Erfolg)
+            }
+        ];
+
+        function loadQuestion() {
+            if (currentQuestion < questions.length) {
+                const q = questions[currentQuestion];
+                document.getElementById('question').innerText = q.question;
+
+                // Sicherstellen, dass die Buttons korrekt gesetzt sind
+                const buttons = document.querySelectorAll('.answers button');
+                buttons.forEach((button, index) => {
+                    if (q.answers[index]) {
+                        button.innerText = q.answers[index];  // Setzt den Text der Buttons auf die Antworten
+                    } else {
+                        button.style.display = 'none'; // Falls weniger als 3 Antworten, Button ausblenden
+                    }
+                });
+
+                // Ändere den Hintergrund je nach Szene
+                changeBackground(q.background);
+            } else {
+                endGame(true);
+            }
+        }
+
+        function chooseAnswer(answer) {
+            const q = questions[currentQuestion];
+            if (answer === q.correctAnswer) {
+                // Hintergrund für richtige Antwort ändern
+                changeBackground('correct_answer.jpg');
+                currentQuestion++;
+                loadQuestion();
+            } else {
+                // Hintergrund für falsche Antwort ändern
+                changeBackground('wrong_answer.jpg');
+                endGame(false);
+            }
+        }
+
+        function changeBackground(image) {
+            document.body.style.backgroundImage = `url('${image}')`;
+            document.body.style.backgroundSize = 'cover';  // Skaliert das Bild, um den Bildschirm zu füllen
+            document.body.style.backgroundPosition = 'center'; // Zentriert das Bild
+            document.body.style.backgroundRepeat = 'no-repeat'; // Verhindert das Wiederholen des Bildes
+        }
+
+        function endGame(won) {
+            document.getElementById('question-container').style.display = 'none';
+            document.getElementById('result-container').style.display = 'block';
+            if (won) {
+                document.getElementById('result-text').innerText = "Herzlichen Glückwunsch, du hast einen ganz normalen Tag von Flora erlebt.";
+                document.getElementById('retry-button').style.display = 'none'; // "Nochmal versuchen" Button wird nicht angezeigt
+            } else {
+                document.getElementById('result-text').innerText = "Leider ist das nicht die richtige Antwort von Flora. Versuch es noch einmal!";
+                document.getElementById('retry-button').style.display = 'block'; // "Nochmal versuchen" Button anzeigen
+            }
+        }
+
+        function retryGame() {
+            // Der Benutzer möchte das Spiel von der letzten Frage wiederholen
+            document.getElementById('result-container').style.display = 'none';
+            document.getElementById('question-container').style.display = 'block';
+            // Bild und Frage wiederherstellen
+            loadQuestion();
+        }
+
+        loadQuestion();
+    </script>
+</body>
+</html>
